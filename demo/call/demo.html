@@ -1,0 +1,156 @@
+﻿<body>
+    <div id="id_msg"></div>
+    <input id="id_to" value="1003" />
+    <button onclick="call()">call</button>
+    <button onclick="gua()">gua</button>
+    <br />
+    <video id="remoteVideo" style="width:352px;height:288px;background-color: black;" ></video>
+    <video id="localVideo"  muted="muted"></video>
+    <video id="remoteVideo1" style="width:352px;height:288px;background-color: black;"></video>
+    <video id="localVideo1"  muted="muted"></video>
+    <script src="../../dist/sip.js"></script>
+    <!--<script src="vconsole.min.js"></script>-->
+    <script type="text/javascript">
+    //var vConsole = new VConsole();
+var config = {
+  // Replace this IP address with your FreeSWITCH IP address
+  uri: '1000@192.168.10.205:5060',
+
+  // Replace this IP address with your FreeSWITCH IP address
+  // and replace the port with your FreeSWITCH ws port
+  transportOptions: {
+    wsServers: ['wss://192.168.10.205:7443']
+  },
+  // FreeSWITCH Default Username
+  authorizationUser: '1000',
+
+  // FreeSWITCH Default Password
+  password: '123456'
+
+};
+
+var userAgent = new SIP.UA(config);
+
+var remoteVideo = document.getElementById('remoteVideo');
+var localVideo = document.getElementById('localVideo');
+var sipsession = null;
+var sipsession1 = null;
+var sessionindex = -1;
+var currentsipsession = null;
+userAgent.on('registered', function () {
+    document.getElementById('id_msg').innerText="ok";
+});
+userAgent.on('invite', function(session) {
+    var url = session.remoteIdentity.uri.toString()+"--->call";
+  var isaccept = confirm(url);
+  if(isaccept)
+  { 
+      //接受来电
+      session.accept({
+        sessionDescriptionHandlerOptions: {
+          constraints: {
+            audio: true,
+            video: true
+          }
+        }
+      });
+      sipsession = session;  
+      session.on('trackAdded', function() {//
+          // We need to check the peer connection to determine which track was added
+            
+          var pc = session.sessionDescriptionHandler.peerConnection;
+          //console.log(pc);
+           //console.log(pc.getLocalStreams());
+          // Gets remote tracks
+          var remoteStream = new MediaStream();
+          pc.getReceivers().forEach(function(receiver) { 
+            remoteStream.addTrack(receiver.track);
+          });
+          remoteVideo.srcObject = remoteStream;
+          remoteVideo.play();
+          
+         if(pc.getSenders() ){
+              var localStream = new MediaStream();
+              pc.getSenders().forEach(function(sender) {
+                localStream.addTrack(sender.track);
+              });
+              localVideo.srcObject = localStream;
+              localVideo.play();
+          }
+          
+     });
+  }
+  else
+  {
+      //拒绝来电
+      session.reject();
+  } 
+} );
+
+function gua(){
+    sipsession.terminate();
+}
+function  call( ){ 
+    
+var to =document.getElementById('id_to').value;
+if(sipsession == null){
+    sessionindex = 0;
+sipsession = userAgent.invite(to+'@192.168.10.205:5060',{
+    sessionDescriptionHandlerOptions: {
+//       constraints: {
+//         audio: true,  video: false
+//       }
+        RTCOfferOptions: {
+            offerToReceiveAudio:false, offerToReceiveVideo:false          
+        }
+    }
+  });
+currentsipsession = sipsession;
+}else{
+    sessionindex = 1;
+
+    sipsession1 = userAgent.invite(to+'@192.168.10.205:5060',{
+    sessionDescriptionHandlerOptions: {
+      constraints: {
+        audio: true,  video: false
+      }
+    }
+  });
+currentsipsession = sipsession1;
+}
+
+currentsipsession.on('trackAdded', function() {
+  // We need to check the peer connection to determine which track was added
+
+  var pc = currentsipsession.sessionDescriptionHandler.peerConnection;
+
+  // Gets remote tracks
+  var remoteStream = new MediaStream(); 
+  pc.getReceivers().forEach(function(receiver) { 
+    remoteStream.addTrack(receiver.track);261074724
+  });
+if(sessionindex == 0){
+  remoteVideo.srcObject = remoteStream;
+  remoteVideo.play(); 
+}else if( sessionindex == 1 ){
+    remoteVideo1.srcObject = remoteStream;
+  remoteVideo1.play(); 
+}
+
+  // Gets local tracks
+  if(pc.getSenders() ){
+      var localStream = new MediaStream();
+      pc.getSenders().forEach(function(sender) {
+        localStream.addTrack(sender.track);
+      });
+      localVideo.srcObject = localStream;
+      localVideo.play();
+  }
+});
+
+}
+
+
+    </script>
+
+</body>
