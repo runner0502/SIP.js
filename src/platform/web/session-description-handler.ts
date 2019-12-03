@@ -70,6 +70,7 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
   private iceGatheringTimeout: boolean;
   private iceGatheringTimer: any | undefined;
   private constraints: MediaStreamConstraints;
+   // private senderpara: RTCRtpSendParameters;
 
   constructor(logger: Logger, options: any) {
     super();
@@ -179,6 +180,11 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
       modifiers = [modifiers];
     }
     modifiers = modifiers.concat(this.modifiers);
+
+    // options.RTCOfferOptions  = {
+    //   offerToReceiveAudio: false,
+    //   offerToReceiveVideo: false
+    //   };
 
     return Promise.resolve().then(() => {
       if (this.shouldAcquireMedia) {
@@ -414,6 +420,13 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
   // Internal functions
   private createOfferOrAnswer(
     RTCOfferOptions: any = {},
+
+  //   RTCOfferOptions: RTCOfferOptions={
+  // iceRestart: true,
+  // offerToReceiveAudio: false,
+  // offerToReceiveVideo: false
+  // },
+
     modifiers: Array<SessionDescriptionHandlerModifier> = []
   ): Promise<RTCSessionDescriptionInit> {
     const methodName: string = this.hasOffer("remote") ? "createAnswer" : "createOffer";
@@ -440,7 +453,14 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
     }).then((sdp: RTCSessionDescriptionInit) =>
       reducePromises(modifiers, this.createRTCSessionDescriptionInit(sdp))
     ).then((sdp: RTCSessionDescriptionInit) => {
+      // this.peerConnection.getSenders().forEach((sender: RTCRtpSender) => {
+        // var para22 = sender.getParameters();
+        // para22.encodings[0]
+        // sender.setParameters(para22);
+      // });
       this.resetIceGatheringComplete();
+      // sdp.sdp = (sdp.sdp || "").replace("sendrecv", "sendonly");
+      // sdp.sdp = (sdp.sdp || "").replace(/a=sendrecv\r\n/g, "a=sendonly\r\n");
       this.logger.log("Setting local sdp.");
       this.logger.log("sdp is " + sdp.sdp || "undefined");
       return pc.setLocalDescription(sdp);
@@ -763,6 +783,8 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
         this.direction = this.C.DIRECTION.NULL;
         break;
     }
+
+    // this.direction  = this.C.DIRECTION.SENDONLY;
     this.emit("directionChanged");
   }
 

@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 
 import { Session } from "../api/session";
-import { Logger } from "../core";
+import { Logger, Parameters } from "../core";
 import { TypeStrings } from "../Enums";
 import { Exceptions } from "../Exceptions";
 import { InviteClientContext, InviteServerContext } from "../Session";
@@ -15,6 +15,7 @@ import { Utils } from "../Utils";
 
 import * as Modifiers from "./Modifiers";
 import { SessionDescriptionHandlerObserver } from "./SessionDescriptionHandlerObserver";
+import { stringify } from 'querystring';
 
 export interface WebSessionDescriptionHandlerOptions extends SessionDescriptionHandlerOptions {
   peerConnectionOptions?: PeerConnectionOptions;
@@ -643,6 +644,9 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
       if (this.peerConnection.removeTrack) {
         this.peerConnection.getSenders().forEach((sender: RTCRtpSender) => {
           this.peerConnection.removeTrack(sender);
+     
+         //RTCRtpSendParameters sendParaRR;
+          //sender.setParameters(Parameters:{});
         });
       }
       return streams;

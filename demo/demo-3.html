@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8" />
+  <title>SIP.js Demo 3</title>
+  <link rel="stylesheet" type="text/css" href="./demo-2.css">
+</head>
+
+<body>
+  <span><a href="index.html">&lt; Index</a></span>
+
+  <h2>Demo: Call</h2>
+
+  <div>
+    When this page was loaded, a <code>SimpleUser</code> was created for two users - Alice & Bob
+    <ol>
+      <li>SIP 服务器地址：<input type="text" id="sipServer" value="wss://192.168.10.205:7443"/> 用户名：<input type="text" id="username" value="1000"/> 密码：<input type="text" id="password" value="123456"/></li>
+      <li> <button id="init" >初始化</button></li>
+      <li> <button id="startAlice" disabled>Connect</button></li>
+        <li><button id="registerAlice" disabled>Register User</button></li>
+        <li><button id="unregisterAlice" disabled>Unregister</button></li>
+        <li><button id="stopAlice" disabled>Disconnect</button></li>
+    </ol>
+  </div>
+
+  <div class="content">
+    <div id="alice" class="user">
+      <h4>Alice</h4>
+      <div class="video">
+        <video id="videoRemoteAlice" width="100%" muted="muted">
+          <p>Your browser doesn't support HTML5 video.</p>
+        </video>
+        <div class="video-local">
+          <video id="videoLocalAlice" width="100%" muted="muted">
+            <p>Your browser doesn't support HTML5 video.</p>
+          </video>
+        </div>
+      </div>
+      <ol>
+        <li><button id="startAlice" disabled>Connect</button></li>
+        <li><button id="registerAlice" disabled>Register User</button></li>
+        <li><button id="beginAlice" disabled>Initiate Video Session</button></li>
+        <li><button id="endAlice" disabled>End Video Session</button></li>
+        <li><button id="unregisterAlice" disabled>Unregister</button></li>
+        <li><button id="stopAlice" disabled>Disconnect</button></li>
+      </ol>
+    </div>
+
+    <div id="bob" class="user">
+      <h4>Bob</h4>
+      <div class="video">
+        <video id="videoRemoteBob" width="100%" muted="muted">
+          <p>Your browser doesn't support HTML5 video.</p>
+        </video>
+        <div class="video-local">
+          <video id="videoLocalBob" width="100%" muted="muted">
+            <p>Your browser doesn't support HTML5 video.</p>
+          </video>
+        </div>
+      </div>
+      <ol>
+        <li><button id="startBob" disabled>Connect</button></li>
+        <li><button id="registerBob" disabled>Register User</button></li>
+        <li><button id="beginBob" disabled>Initiate Video Session</button></li>
+        <li><button id="endBob" disabled>End Video Session</button></li>
+        <li><button id="unregisterBob" disabled>Unregister</button></li>
+        <li><button id="stopBob" disabled>Disconnect</button></li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="./dist/demo-3.js"
+    onerror="alert('To run this demo you must first build the library and demo source! See the README.')">
+    </script>
+
+</body>
+
+</html>
