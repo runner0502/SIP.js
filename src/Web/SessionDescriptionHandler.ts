@@ -15,7 +15,6 @@ import { Utils } from "../Utils";
 
 import * as Modifiers from "./Modifiers";
 import { SessionDescriptionHandlerObserver } from "./SessionDescriptionHandlerObserver";
-import { stringify } from 'querystring';
 
 export interface WebSessionDescriptionHandlerOptions extends SessionDescriptionHandlerOptions {
   peerConnectionOptions?: PeerConnectionOptions;
@@ -644,9 +643,8 @@ export class SessionDescriptionHandler extends EventEmitter implements SessionDe
       if (this.peerConnection.removeTrack) {
         this.peerConnection.getSenders().forEach((sender: RTCRtpSender) => {
           this.peerConnection.removeTrack(sender);
-     
-         //RTCRtpSendParameters sendParaRR;
-          //sender.setParameters(Parameters:{});
+         // RTCRtpSendParameters sendParaRR;
+          // sender.setParameters(Parameters:{});
         });
       }
       return streams;
