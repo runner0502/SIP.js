@@ -1,7 +1,7 @@
 // tslint:disable: no-console
-import { SimpleUser, SimpleUserDelegate, SimpleUserOptions } from "../src/platform/web";
+import { SimpleUser, SimpleUserDelegate, SimpleUserOptions, Sphone } from "../src/platform/web";
+import { getAudio, getButton, getInput, getVideo } from "./demo-utils";
 // import { nameAlice, nameBob, uriAlice, uriBob, webSocketServerAlice, webSocketServerBob } from "./demo-users";
-import { getButton, getVideo } from "./demo-utils";
 
 const btnInit = getButton("init");
 const startAlice = getButton("startAlice");
@@ -20,16 +20,28 @@ const videoLocalAlice = getVideo("videoLocalAlice");
 const videoLocalBob = getVideo("videoLocalBob");
 const videoRemoteAlice = getVideo("videoRemoteAlice");
 const videoRemoteBob = getVideo("videoRemoteBob");
+const txtServer = getInput("sipServer");
+const txtUsername = getInput("username");
+const txtPassword = getInput("password");
+const txtCallee = getInput("callee");
+const audioElement = getAudio("remoteAudio");
 
-const domain = "192.168.10.205:5060";
+// const domain = "192.168.10.205:50601";
+const domain = "119.57.44.172:5060";
 
-export const nameAlice = "1000";
-export const uriAlice = "sip:1000@" + domain;
-export const webSocketServerAlice = "wss://192.168.10.205:7443";
+// export const nameAlice = "1000";
+export const nameAlice = txtUsername.value;
+export const uriAlice = "sip:" + nameAlice + "@" + domain;
+// export const webSocketServerAlice = "wss://192.168.10.205:7443";
+export const webSocketServerAlice = "wss://119.57.44.172:7443";
 
-export const nameBob = "1003";
-export const uriBob = "sip:1003@" + domain;
-export const webSocketServerBob = "wss://192.168.10.205:7443";
+// export const nameBob = "1003";
+// export const uriBob = "sip:1003@" + domain;
+
+export const nameBob = txtCallee.value;
+export const uriBob = "sip:" + nameBob + "@" + domain;
+// export const webSocketServerBob = "wss://192.168.10.205:7443";
+export const webSocketServerBob = "wss://119.57.44.172:7443";
 btnInit.addEventListener( "click", initButtonClickListener() );
 
 // New SimpleUser for Alice
@@ -66,7 +78,7 @@ function buildUser(
   endButton: HTMLButtonElement,
   videoLocalElement: HTMLVideoElement,
   videoRemoteElement: HTMLVideoElement
-): SimpleUser {
+): Sphone {
   console.log(`Creating "${name}" <${aor}>...`);
 
   // SimpleUser options
@@ -81,7 +93,8 @@ function buildUser(
         video: videoLocalElement
       },
       remote: {
-        video: videoRemoteElement
+        video: videoRemoteElement,
+        // audio: videoRemoteElement
       }
     },
     userAgentOptions: {
@@ -91,15 +104,16 @@ function buildUser(
         //       constraints: {
         //         audio: true,  video: false
         //       }
-                RTCOfferOptions: {
-                    offerToReceiveAudio: false, offerToReceiveVideo : false
-                }
+                // RTCOfferOptions: {
+                //     offerToReceiveAudio: false, offerToReceiveVideo : false
+                // }
             }
     }
   };
 
   // Create SimpleUser
-  const user = new SimpleUser(webSocketServer, options);
+  // const user = new SimpleUser(webSocketServer, options);
+  const user = new Sphone(webSocketServer, options);
 
   // SimpleUser delegate
   const delegate: SimpleUserDelegate = {
@@ -141,7 +155,7 @@ function buildUser(
 
 // Helper function to create call received callback
 function makeCallReceivedCallback(
-  user: SimpleUser,
+  user: Sphone,
 ): () => void {
   return () => {
     console.log(`[${user.id}] call received`);
@@ -156,7 +170,7 @@ function makeCallReceivedCallback(
 
 // Helper function to create call created callback
 function makeCallCreatedCallback(
-  user: SimpleUser,
+  user: Sphone,
   beginButton: HTMLButtonElement,
   endButton: HTMLButtonElement
 ): () => void {
@@ -169,7 +183,7 @@ function makeCallCreatedCallback(
 
 // Helper function to create call hangup callback
 function makeCallHangupCallback(
-  user: SimpleUser,
+  user: Sphone,
   beginButton: HTMLButtonElement,
   endButton: HTMLButtonElement
 ): () => void {
@@ -182,7 +196,7 @@ function makeCallHangupCallback(
 
 // Helper function to create registered callback
 function makeRegisteredCallback(
-  user: SimpleUser,
+  user: Sphone,
   registerButton: HTMLButtonElement,
   unregisterButton: HTMLButtonElement
 ): () => void {
@@ -195,7 +209,7 @@ function makeRegisteredCallback(
 
 // Helper function to create unregistered callback
 function makeUnregisteredCallback(
-  user: SimpleUser,
+  user: Sphone,
   registerButton: HTMLButtonElement,
   unregisterButton: HTMLButtonElement
 ): () => void {
@@ -208,7 +222,7 @@ function makeUnregisteredCallback(
 
 // Helper function to setup click handler for start button
 function makeStartButtonClickListener(
-  user: SimpleUser,
+  user: Sphone,
   startButton: HTMLButtonElement,
   stopButton: HTMLButtonElement,
   registerButton: HTMLButtonElement,
@@ -232,7 +246,7 @@ function makeStartButtonClickListener(
 
 // Helper function to setup click handler for stop button
 function makeStopButtonClickListener(
-  user: SimpleUser,
+  user: Sphone,
   startButton: HTMLButtonElement,
   stopButton: HTMLButtonElement,
   registerButton: HTMLButtonElement,
@@ -256,7 +270,7 @@ function makeStopButtonClickListener(
 
 // Helper function to setup click handler for register button
 function makeRegisterButtonClickListener(
-  user: SimpleUser,
+  user: Sphone,
   registerButton: HTMLButtonElement,
 ): () => void {
   return () => {
@@ -285,7 +299,7 @@ function makeRegisterButtonClickListener(
 
 // Helper function to setup click handler for unregister button
 function makeUnregisterButtonClickListener(
-  user: SimpleUser,
+  user: Sphone,
   unregisterButton: HTMLButtonElement
 ): () => void {
   return () => {
@@ -303,13 +317,15 @@ function makeUnregisterButtonClickListener(
 
 // Helper function to setup click handler for begin button
 function makeBeginButtonClickListener(
-  user: SimpleUser,
+  user: Sphone,
   target: string,
   targetDisplay: string
 ): () => void {
   return () => {
+    const nameBob1 = txtCallee.value;
+    const uriBob1 = "sip:" + nameBob1 + "@" + domain;
     user.call(
-      target,
+      uriBob1,
       undefined,
       { // An example of how to get access to a SIP response message for custom handling
         requestDelegate: {
@@ -333,7 +349,7 @@ function makeBeginButtonClickListener(
 
 // Helper function to setup click handler for begin button
 function makeEndButtonClickListener(
-  user: SimpleUser
+  user: Sphone
 ): () => void {
   return () => {
     user.hangup()
@@ -348,10 +364,12 @@ function makeEndButtonClickListener(
 function initButtonClickListener(
 ): () => void {
   return () => {
+   const nameAlice1 = txtUsername.value;
+   const uriAlice1 = "sip:" + nameAlice1 + "@" + domain;
    alice = buildUser(
     webSocketServerAlice,
-    uriAlice,
-    nameAlice,
+    uriAlice1,
+    nameAlice1,
     uriBob,
     nameBob,
     startAlice,

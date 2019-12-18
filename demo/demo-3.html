@@ -9,25 +9,24 @@
 </head>
 
 <body>
-  <span><a href="index.html">&lt; Index</a></span>
 
   <h2>Demo: Call</h2>
 
   <div>
-    When this page was loaded, a <code>SimpleUser</code> was created for two users - Alice & Bob
     <ol>
-      <li>SIP 服务器地址：<input type="text" id="sipServer" value="wss://192.168.10.205:7443"/> 用户名：<input type="text" id="username" value="1000"/> 密码：<input type="text" id="password" value="123456"/></li>
+      <li>SIP 服务器地址：<input type="text" id="sipServer" value="wss://119.57.44.172:7443"/> 用户名：<input type="text" id="username" value="1000"/> 密码：<input type="text" id="password" value="123456"/></li>
       <li> <button id="init" >初始化</button></li>
-      <li> <button id="startAlice" disabled>Connect</button></li>
-        <li><button id="registerAlice" disabled>Register User</button></li>
-        <li><button id="unregisterAlice" disabled>Unregister</button></li>
-        <li><button id="stopAlice" disabled>Disconnect</button></li>
+      <li> <button id="startAlice" disabled>连接</button></li>
+        <li><button id="registerAlice" disabled>注册</button></li>
+        <li><button id="beginAlice" disabled>呼叫</button>  对方号码：<input type="text" id="callee" value="1002"/> </li>
+        <li><button id="endAlice" disabled>挂断</button></li>
+        <li><button id="unregisterAlice" disabled>注销</button></li>
+        <li><button id="stopAlice" disabled>断开</button></li>
     </ol>
   </div>
 
   <div class="content">
     <div id="alice" class="user">
-      <h4>Alice</h4>
       <div class="video">
         <video id="videoRemoteAlice" width="100%" muted="muted">
           <p>Your browser doesn't support HTML5 video.</p>
@@ -37,8 +36,13 @@
             <p>Your browser doesn't support HTML5 video.</p>
           </video>
         </div>
+        <div>
+          <audio id="remoteAudio" controls>
+            <p>Your browser doesn't support HTML5 audio.</p>
+          </audio>
+        </div>
       </div>
-      <ol>
+      <ol style="display: none;">
         <li><button id="startAlice" disabled>Connect</button></li>
         <li><button id="registerAlice" disabled>Register User</button></li>
         <li><button id="beginAlice" disabled>Initiate Video Session</button></li>
@@ -48,7 +52,7 @@
       </ol>
     </div>
 
-    <div id="bob" class="user">
+    <div id="bob" class="user" style="display: none;">
       <h4>Bob</h4>
       <div class="video">
         <video id="videoRemoteBob" width="100%" muted="muted">
