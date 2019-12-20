@@ -2,22 +2,27 @@ import { Session, SessionState } from "../../api";
 import { Logger } from "../../core";
 import { SessionDescriptionHandler } from "./session-description-handler";
 import { SimpleUserDelegate } from "./simple-user-delegate";
+import { SphoneDelegate } from "./sphone-delegate";
 export class Call {
      public session: Session ;
      public localVideoControal: HTMLVideoElement;
      public remoteVideoControal: HTMLVideoElement;
+     public remoteAudioControl: HTMLAudioElement;
 
-     public delegate: SimpleUserDelegate | undefined;
+     public delegate: SphoneDelegate | undefined;
      public id: string | undefined;
 
      private logger: Logger;
 
      constructor(sessionPara: Session, localVideoControalPara: HTMLVideoElement,
-                 remoteVideoControalPara: HTMLVideoElement, logger: Logger ) {
+                 remoteVideoControalPara: HTMLVideoElement, remoteAudioControl: HTMLAudioElement, logger: Logger,
+                 delegate: SphoneDelegate | undefined ) {
             this.session = sessionPara;
             this.localVideoControal = localVideoControalPara;
             this.remoteVideoControal = remoteVideoControalPara;
+            this.remoteAudioControl = remoteAudioControl;
             this.logger = logger;
+            this.delegate = delegate;
                // Setup session state change handler
             this.session.stateChange.on((state: SessionState) => {
             if (this.session == null) {
@@ -33,7 +38,7 @@ export class Call {
                 this.setupLocalMedia();
                 this.setupRemoteMedia();
                 if (this.delegate && this.delegate.onCallAnswered) {
-                this.delegate.onCallAnswered();
+                this.delegate.onCallAnswered( this.session.id );
                 }
                 break;
             case SessionState.Terminating:
@@ -42,7 +47,7 @@ export class Call {
                 // this.session = undefined;
                 this.cleanupMedia();
                 if (this.delegate && this.delegate.onCallHangup) {
-                this.delegate.onCallHangup();
+                this.delegate.onCallHangup( this.session.id );
                 }
                 break;
             default:
@@ -93,16 +98,17 @@ export class Call {
             this.logger.error(`[${this.id}] error playing video`);
             this.logger.error(error.message);
           });
-    //   } else if (this.options.media.remote.audio) {
-    //     if (remoteAudioTrack) {
-    //       remoteStream.addTrack(remoteAudioTrack);
-    //       this.options.media.remote.audio.srcObject = remoteStream;
-    //       this.options.media.remote.audio.play()
-    //         .catch((error: Error) => {
-    //           this.logger.error(`[${this.id}] error playing audio`);
-    //           this.logger.error(error.message);
-    //         });
-    //       }
+      }
+      if (this.remoteAudioControl) {
+        if (remoteAudioTrack) {
+          remoteStream.addTrack(remoteAudioTrack);
+          this.remoteAudioControl.srcObject = remoteStream;
+          this.remoteAudioControl.play()
+            .catch((error: Error) => {
+              this.logger.error(`[${this.id}] error playing audio`);
+              this.logger.error(error.message);
+            });
+          }
       }
     }
   }

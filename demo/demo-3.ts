@@ -1,5 +1,5 @@
 // tslint:disable: no-console
-import { SimpleUser, SimpleUserDelegate, SimpleUserOptions, Sphone } from "../src/platform/web";
+import { SimpleUser, SimpleUserDelegate, SimpleUserOptions, Sphone, SphoneDelegate } from "../src/platform/web";
 import { getAudio, getButton, getInput, getVideo } from "./demo-utils";
 // import { nameAlice, nameBob, uriAlice, uriBob, webSocketServerAlice, webSocketServerBob } from "./demo-users";
 
@@ -116,10 +116,13 @@ function buildUser(
   const user = new Sphone(webSocketServer, options);
 
   // SimpleUser delegate
-  const delegate: SimpleUserDelegate = {
+  const delegate: SphoneDelegate = {
     onCallCreated: makeCallCreatedCallback(user, beginButton, endButton),
     onCallReceived: makeCallReceivedCallback(user),
-    onCallHangup: makeCallHangupCallback(user, beginButton, endButton),
+    onCallHangup: (SessionId: string | undefined) => {
+      return makeCallHangupCallback(user, beginButton, endButton, SessionId);
+    },
+    // onCallHangup: makeCallHangupCallback1(user, beginButton, endButton),
     onRegistered: makeRegisteredCallback(user, registerButton, unregisterButton),
     onUnregistered: makeUnregisteredCallback(user, registerButton, unregisterButton)
   };
@@ -149,6 +152,8 @@ function buildUser(
 
   // Enable start button
   startButton.disabled = false;
+
+  beginBob.addEventListener("click", makeBeginButtonClickListener1(user, targetAOR, targetName));
 
   return user;
 }
@@ -185,10 +190,23 @@ function makeCallCreatedCallback(
 function makeCallHangupCallback(
   user: Sphone,
   beginButton: HTMLButtonElement,
-  endButton: HTMLButtonElement
+  endButton: HTMLButtonElement,
+  sessionId: string | undefined
+) {
+    console.log(`[${user.id}] call hangup`);
+    // console.log( sessionId );
+    beginButton.disabled = false;
+    endButton.disabled = true;
+}
+
+function makeCallHangupCallback1(
+  user: Sphone,
+  beginButton: HTMLButtonElement,
+  endButton: HTMLButtonElement,
 ): () => void {
   return () => {
     console.log(`[${user.id}] call hangup`);
+    // console.log( sessionId );
     beginButton.disabled = false;
     endButton.disabled = true;
   };
@@ -324,8 +342,45 @@ function makeBeginButtonClickListener(
   return () => {
     const nameBob1 = txtCallee.value;
     const uriBob1 = "sip:" + nameBob1 + "@" + domain;
-    user.call(
+    user.call1(
       uriBob1,
+      videoLocalAlice,
+      videoRemoteAlice,
+      audioElement,
+      undefined,
+      { // An example of how to get access to a SIP response message for custom handling
+        requestDelegate: {
+          onReject: (response) => {
+            console.warn(`[${user.id}] INVITE rejected`);
+            let message = `Session invitation to "${targetDisplay}" rejected.\n`;
+            message += `Reason: ${response.message.reasonPhrase}\n`;
+            message += `Perhaps "${targetDisplay}" is not connected or registered?\n`;
+            message += `Or perhaps "${targetDisplay}" did not grant access to video?\n`;
+            alert(message);
+          }
+        }
+      })
+      .catch((error: Error) => {
+        console.error(`[${user.id}] failed to begin session`);
+        console.error(error);
+        alert("Failed to begin session.\n" + error);
+      });
+  };
+}
+
+function makeBeginButtonClickListener1(
+  user: Sphone,
+  target: string,
+  targetDisplay: string
+): () => void {
+  return () => {
+    const nameBob1 = txtCallee.value;
+    const uriBob1 = "sip:" + nameBob1 + "@" + domain;
+    user.call1(
+      uriBob1,
+      videoLocalBob,
+      videoRemoteBob,
+      audioElement,
       undefined,
       { // An example of how to get access to a SIP response message for custom handling
         requestDelegate: {

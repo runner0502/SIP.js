@@ -23,8 +23,9 @@ import {
 import { Logger } from "../../core";
 import { Call } from "./call";
 import { SessionDescriptionHandler } from "./session-description-handler";
-import { SimpleUserDelegate } from "./simple-user-delegate";
+// import { SimpleUserDelegate } from "./simple-user-delegate";
 import { SimpleUserOptions } from "./simple-user-options";
+import { SphoneDelegate } from "./sphone-delegate";
 import { Transport } from "./transport";
 
 /**
@@ -37,7 +38,7 @@ import { Transport } from "./transport";
  */
 export class Sphone {
   /** Delegate. */
-  public delegate: SimpleUserDelegate | undefined;
+  public delegate: SphoneDelegate | undefined;
 
   private logger: Logger;
   private options: SimpleUserOptions;
@@ -100,18 +101,18 @@ export class Sphone {
         // Guard against a pre-existing session. This implementation only supports one session at a time.
         // However an incoming INVITE request may be received at any time and/or while in the process
         // of sending an outgoing INVITE request. So we reject any incoming INVITE in those cases.
-        if (this.session) {
-          this.logger.warn(`[${this.id}] session already in progress, rejecting INVITE...`);
-          invitation.reject()
-            .then(() => {
-              this.logger.log(`[${this.id}] rejected INVITE`);
-            })
-            .catch((error: Error) => {
-              this.logger.error(`[${this.id}] failed to reject INVITE`);
-              this.logger.error(error.toString());
-            });
-          return;
-        }
+        // if (this.session) {
+        //   this.logger.warn(`[${this.id}] session already in progress, rejecting INVITE...`);
+        //   invitation.reject()
+        //     .then(() => {
+        //       this.logger.log(`[${this.id}] rejected INVITE`);
+        //     })
+        //     .catch((error: Error) => {
+        //       this.logger.error(`[${this.id}] failed to reject INVITE`);
+        //       this.logger.error(error.toString());
+        //     });
+        //   return;
+        // }
 
         // Use our configured constraints as options for any Inviter created as result of a REFER
         const referralInviterOptions: InviterOptions = {
@@ -298,14 +299,15 @@ export class Sphone {
     destination: string,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
+    remoteAudioControl: HTMLAudioElement,
     inviterOptions?: InviterOptions,
     inviterInviteOptions?: InviterInviteOptions
   ): Promise<void> {
     this.logger.log(`[${this.id}] beginning Session...`);
 
-    if (this.session) {
-      return Promise.reject(new Error("Session already exists."));
-    }
+    // if (this.session) {
+    //   return Promise.reject(new Error("Session already exists."));
+    // }
 
     const target = UserAgent.makeURI(destination);
     if (!target) {
@@ -328,7 +330,7 @@ export class Sphone {
 
     // Send INVITE
     return this.sendInvite1(inviter,  localVideoControl,
-      remoteVideoControl, inviterOptions, inviterInviteOptions)
+      remoteVideoControl, remoteAudioControl, inviterOptions, inviterInviteOptions)
       .then(() => { return; });
   }
 
@@ -683,7 +685,7 @@ export class Sphone {
           this.setupLocalMedia();
           this.setupRemoteMedia();
           if (this.delegate && this.delegate.onCallAnswered) {
-            this.delegate.onCallAnswered();
+            this.delegate.onCallAnswered("0");
           }
           break;
         case SessionState.Terminating:
@@ -692,7 +694,7 @@ export class Sphone {
           this.session = undefined;
           this.cleanupMedia();
           if (this.delegate && this.delegate.onCallHangup) {
-            this.delegate.onCallHangup();
+            this.delegate.onCallHangup("0");
           }
           break;
         default:
@@ -717,12 +719,14 @@ export class Sphone {
     session: Session,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
+    remoteAudioControl: HTMLAudioElement,
     referralInviterOptions?: InviterOptions
   ): void {
     // Set session
     this.session = session;
     const callLogger = this.userAgent.getLogger("sip.Call");
-    const call1 = new Call(session, localVideoControl, remoteVideoControl, callLogger);
+    const call1 = new Call(session, localVideoControl, remoteVideoControl,
+      remoteAudioControl, callLogger, this.delegate);
     this.calls.push( call1 );
 
     // Call session created callback
@@ -731,48 +735,48 @@ export class Sphone {
     }
 
     // Setup session state change handler
-    this.session.stateChange.on((state: SessionState) => {
-      if (this.session !== session) {
-        return; // if our session has changed, just return
-      }
-      this.logger.log(`[${this.id}] session state changed to ${state}`);
-      switch (state) {
-        case SessionState.Initial:
-          break;
-        case SessionState.Establishing:
-          break;
-        case SessionState.Established:
-          this.setupLocalMedia();
-          this.setupRemoteMedia();
-          if (this.delegate && this.delegate.onCallAnswered) {
-            this.delegate.onCallAnswered();
-          }
-          break;
-        case SessionState.Terminating:
-          break;
-        case SessionState.Terminated:
-          this.session = undefined;
-          this.cleanupMedia();
-          if (this.delegate && this.delegate.onCallHangup) {
-            this.delegate.onCallHangup();
-          }
-          break;
-        default:
-          throw new Error("Unknown session state.");
-      }
-    });
+    // this.session.stateChange.on((state: SessionState) => {
+    //   if (this.session !== session) {
+    //     return; // if our session has changed, just return
+    //   }
+    //   this.logger.log(`[${this.id}] session state changed to ${state}`);
+    //   switch (state) {
+    //     case SessionState.Initial:
+    //       break;
+    //     case SessionState.Establishing:
+    //       break;
+    //     case SessionState.Established:
+    //       this.setupLocalMedia();
+    //       this.setupRemoteMedia();
+    //       if (this.delegate && this.delegate.onCallAnswered) {
+    //         this.delegate.onCallAnswered("0");
+    //       }
+    //       break;
+    //     case SessionState.Terminating:
+    //       break;
+    //     case SessionState.Terminated:
+    //       this.session = undefined;
+    //       this.cleanupMedia();
+    //       if (this.delegate && this.delegate.onCallHangup) {
+    //         this.delegate.onCallHangup("0");
+    //       }
+    //       break;
+    //     default:
+    //       throw new Error("Unknown session state.");
+    //   }
+    // });
 
     // Setup delegate
-    this.session.delegate = {
-      onRefer: (referral: Referral) => {
-        referral
-          .accept()
-          .then(() => this.sendInvite(referral.makeInviter(referralInviterOptions), referralInviterOptions))
-          .catch((error: Error) => {
-            this.logger.error(error.message);
-          });
-      }
-    };
+    // this.session.delegate = {
+    //   onRefer: (referral: Referral) => {
+    //     referral
+    //       .accept()
+    //       .then(() => this.sendInvite(referral.makeInviter(referralInviterOptions), referralInviterOptions))
+    //       .catch((error: Error) => {
+    //         this.logger.error(error.message);
+    //       });
+    //   }
+    // };
   }
 
   /** Helper function to init send then send invite. */
@@ -796,13 +800,14 @@ export class Sphone {
     inviter: Inviter,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
+    remoteAudioControl: HTMLAudioElement,
     inviterOptions?: InviterOptions,
     inviterInviteOptions?: InviterInviteOptions
   ): Promise<void> {
 
     // Initialize our session
     this.initSession1(inviter, localVideoControl,
-      remoteVideoControl, inviterOptions);
+      remoteVideoControl, remoteAudioControl, inviterOptions);
 
     // Send the INVITE
     return inviter.invite(inviterInviteOptions)
