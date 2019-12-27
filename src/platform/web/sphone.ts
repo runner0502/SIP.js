@@ -299,7 +299,7 @@ export class Sphone {
     destination: string,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
-    remoteAudioControl: HTMLAudioElement,
+    remoteAudioControl?: HTMLAudioElement,
     inviterOptions?: InviterOptions,
     inviterInviteOptions?: InviterInviteOptions
   ): Promise<void> {
@@ -719,14 +719,14 @@ export class Sphone {
     session: Session,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
-    remoteAudioControl: HTMLAudioElement,
+    remoteAudioControl?: HTMLAudioElement,
     referralInviterOptions?: InviterOptions
   ): void {
     // Set session
     this.session = session;
     const callLogger = this.userAgent.getLogger("sip.Call");
     const call1 = new Call(session, localVideoControl, remoteVideoControl,
-      remoteAudioControl, callLogger, this.delegate);
+    callLogger, this.delegate, remoteAudioControl);
     this.calls.push( call1 );
 
     // Call session created callback
@@ -800,7 +800,7 @@ export class Sphone {
     inviter: Inviter,
     localVideoControl: HTMLVideoElement,
     remoteVideoControl: HTMLVideoElement,
-    remoteAudioControl: HTMLAudioElement,
+    remoteAudioControl?: HTMLAudioElement,
     inviterOptions?: InviterOptions,
     inviterInviteOptions?: InviterInviteOptions
   ): Promise<void> {

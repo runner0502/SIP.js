@@ -7,7 +7,7 @@ export class Call {
      public session: Session ;
      public localVideoControal: HTMLVideoElement;
      public remoteVideoControal: HTMLVideoElement;
-     public remoteAudioControl: HTMLAudioElement;
+     public remoteAudioControl?: HTMLAudioElement;
 
      public delegate: SphoneDelegate | undefined;
      public id: string | undefined;
@@ -15,8 +15,8 @@ export class Call {
      private logger: Logger;
 
      constructor(sessionPara: Session, localVideoControalPara: HTMLVideoElement,
-                 remoteVideoControalPara: HTMLVideoElement, remoteAudioControl: HTMLAudioElement, logger: Logger,
-                 delegate: SphoneDelegate | undefined ) {
+                 remoteVideoControalPara: HTMLVideoElement, logger: Logger,
+                 delegate: SphoneDelegate | undefined, remoteAudioControl?: HTMLAudioElement) {
             this.session = sessionPara;
             this.localVideoControal = localVideoControalPara;
             this.remoteVideoControal = remoteVideoControalPara;
@@ -99,17 +99,17 @@ export class Call {
             this.logger.error(error.message);
           });
       }
-      if (this.remoteAudioControl) {
-        if (remoteAudioTrack) {
-          remoteStream.addTrack(remoteAudioTrack);
-          this.remoteAudioControl.srcObject = remoteStream;
-          this.remoteAudioControl.play()
-            .catch((error: Error) => {
-              this.logger.error(`[${this.id}] error playing audio`);
-              this.logger.error(error.message);
-            });
-          }
-      }
+      // if (this.remoteAudioControl) {
+      //   if (remoteAudioTrack) {
+      //     remoteStream.addTrack(remoteAudioTrack);
+      //     this.remoteAudioControl.srcObject = remoteStream;
+      //     this.remoteAudioControl.play()
+      //       .catch((error: Error) => {
+      //         this.logger.error(`[${this.id}] error playing audio`);
+      //         this.logger.error(error.message);
+      //       });
+      //     }
+      // }
     }
   }
 
