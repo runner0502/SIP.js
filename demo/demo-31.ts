@@ -45,7 +45,7 @@ export const webSocketServerBob = "wss://119.57.44.172:7443";
 btnInit.addEventListener( "click", initButtonClickListener() );
 
 // New SimpleUser for Alice
-let alice: Sphone;
+let alice;
 
 // New SimpleUser for Bob
 // const bob = buildUser(
@@ -158,105 +158,6 @@ function buildUser(
   return user;
 }
 
-function makeCallCreatedCallback1(
-  user: Sphone,
-): () => void {
-  return () => {
-    console.log(`[${user.id}] call created`);
-    //beginButton.disabled = true;
-    //endButton.disabled = false;
-  };
-}
-
-function buildUser1(
-  webSocketServer: string,
-  aor: string,
-  displayName: string,
-  targetAOR: string,
-  targetName: string,
-  beginButton: HTMLButtonElement,
-  videoLocalElement: HTMLVideoElement,
-  videoRemoteElement: HTMLVideoElement
-): Sphone {
-  console.log(`Creating "${name}" <${aor}>...`);
-
-  // SimpleUser options
-  const options: SimpleUserOptions = {
-    aor,
-    media: {
-      constraints: { // This demo is making "video only" calls
-        audio: true,
-        video: true
-      },
-      local: {
-        video: videoLocalElement
-      },
-      remote: {
-        video: videoRemoteElement,
-        // audio: videoRemoteElement
-      }
-    },
-    userAgentOptions: {
-      displayName,
-      authorizationPassword: "123456",
-          sessionDescriptionHandlerFactoryOptions: {
-        //       constraints: {
-        //         audio: true,  video: false
-        //       }
-                // RTCOfferOptions: {
-                //     offerToReceiveAudio: false, offerToReceiveVideo : false
-                // }
-            }
-    }
-  };
-
-  // Create SimpleUser
-  // const user = new SimpleUser(webSocketServer, options);
-  const user = new Sphone(webSocketServer, options);
-
-  // SimpleUser delegate
-  const delegate: SphoneDelegate = {
-    onCallCreated: makeCallCreatedCallback1(user),
-    onCallReceived: makeCallReceivedCallback(user),
-    onCallHangup: (SessionId: string | undefined) => {
-      return 0;
-    },
-    // onCallHangup: makeCallHangupCallback1(user, beginButton, endButton),
-    onRegistered: makeRegisteredCallback1(user),
-    onUnregistered: makeUnregisteredCallback1(user)
-  };
-  user.delegate = delegate;
-
-  // Setup start button click listeners
-  // startButton.addEventListener(
-  //   "click", makeStartButtonClickListener(user, startButton, stopButton, registerButton, beginButton)
-  // );
-
-  // // Setup stop button click listeners
-  // stopButton.addEventListener(
-  //   "click", makeStopButtonClickListener(user, startButton, stopButton, registerButton, beginButton)
-  // );
-
-  // // Setup register button click listeners
-  // registerButton.addEventListener("click", makeRegisterButtonClickListener(user, registerButton));
-
-  // // Setup unregister button click listeners
-  // unregisterButton.addEventListener("click", makeUnregisterButtonClickListener(user, unregisterButton));
-
-  // // Setup begin button click listeners
-  beginButton.addEventListener("click", makeBeginButtonClickListener(user, targetAOR, targetName));
-
-  // // Setup end button click listeners
-  // endButton.addEventListener("click", makeEndButtonClickListener(user));
-
-  // Enable start button
-  // startButton.disabled = false;
-
-  // beginBob.addEventListener("click", makeBeginButtonClickListener1(user, targetAOR, targetName));
-
-  return user;
-}
-
 // Helper function to create call received callback
 function makeCallReceivedCallback(
   user: Sphone,
@@ -280,8 +181,8 @@ function makeCallCreatedCallback(
 ): () => void {
   return () => {
     console.log(`[${user.id}] call created`);
-    //beginButton.disabled = true;
-    //endButton.disabled = false;
+    beginButton.disabled = true;
+    endButton.disabled = false;
   };
 }
 
@@ -294,8 +195,8 @@ function makeCallHangupCallback(
 ) {
     console.log(`[${user.id}] call hangup`);
     // console.log( sessionId );
-    //beginButton.disabled = false;
-    //endButton.disabled = true;
+    beginButton.disabled = false;
+    endButton.disabled = true;
 }
 
 function makeCallHangupCallback1(
@@ -306,8 +207,8 @@ function makeCallHangupCallback1(
   return () => {
     console.log(`[${user.id}] call hangup`);
     // console.log( sessionId );
-    //beginButton.disabled = false;
-    //endButton.disabled = true;
+    beginButton.disabled = false;
+    endButton.disabled = true;
   };
 }
 
@@ -319,18 +220,8 @@ function makeRegisteredCallback(
 ): () => void {
   return () => {
     console.log(`[${user.id}] registered`);
-    //registerButton.disabled = true;
-    //unregisterButton.disabled = false;
-  };
-}
-
-function makeRegisteredCallback1(
-  user: Sphone,
-): () => void {
-  return () => {
-    console.log(`[${user.id}] registered`);
-    //registerButton.disabled = true;
-    //unregisterButton.disabled = false;
+    registerButton.disabled = true;
+    unregisterButton.disabled = false;
   };
 }
 
@@ -342,17 +233,8 @@ function makeUnregisteredCallback(
 ): () => void {
   return () => {
     console.log(`[${user.id}] unregistered`);
-    //registerButton.disabled = false;
-    //unregisterButton.disabled = true;
-  };
-}
-function makeUnregisteredCallback1(
-  user: Sphone
-): () => void {
-  return () => {
-    console.log(`[${user.id}] unregistered`);
-    //registerButton.disabled = false;
-    //unregisterButton.disabled = true;
+    registerButton.disabled = false;
+    unregisterButton.disabled = true;
   };
 }
 
@@ -539,48 +421,20 @@ function initButtonClickListener(
   return () => {
    const nameAlice1 = txtUsername.value;
    const uriAlice1 = "sip:" + nameAlice1 + "@" + domain;
-   alice = buildUser1(
+   alice = buildUser(
     webSocketServerAlice,
     uriAlice1,
     nameAlice1,
     uriBob,
     nameBob,
+    startAlice,
+    stopAlice,
+    registerAlice,
+    unregisterAlice,
     beginAlice,
+    endAlice,
     videoLocalAlice,
     videoRemoteAlice
   );
-   alice.connect()
-  .then(() => {
-    // startButton.disabled = true;
-    // stopButton.disabled = false;
-    // registerButton.disabled = false;
-    beginAlice.disabled = false;
-
-    alice.register(
-      undefined,
-      { // An example of how to get access to a SIP response message for custom handling
-        requestDelegate: {
-          onReject: (response) => {
-            console.warn(`[${alice.id}] REGISTER rejected`);
-            let message = `Registration of "${response.message.to.uri.aor}" rejected.\n`;
-            message += `Reason: ${response.message.reasonPhrase}\n`;
-            alert(message);
-          }
-        }
-      })
-      .then(() => {
-        // registerButton.disabled = true;
-      })
-      .catch((error: Error) => {
-        console.error(`[${alice.id}] failed to register`);
-        console.error(error);
-        alert("Failed to register.\n" + error);
-      });
-  })
-  .catch((error: Error) => {
-    console.error(`[${alice.id}] failed to connect`);
-    console.error(error);
-    alert("Failed to connect.\n" + error);
-  });
    };
 }
