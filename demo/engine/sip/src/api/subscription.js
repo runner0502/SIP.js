@@ -1,0 +1,94 @@
+import { EventEmitter } from "events";
+import { makeEmitter } from "./emitter";
+import { SubscriptionState } from "./subscription-state";
+/**
+ * A subscription provides asynchronous {@link Notification} of events.
+ *
+ * @remarks
+ * See {@link Subscriber} for details on establishing a subscription.
+ *
+ * @public
+ */
+export class Subscription {
+    /**
+     * Constructor.
+     * @param userAgent - User agent. See {@link UserAgent} for details.
+     * @internal
+     */
+    constructor(userAgent, options = {}) {
+        this._disposed = false;
+        this._state = SubscriptionState.Initial;
+        this._stateEventEmitter = new EventEmitter();
+        this._logger = userAgent.getLogger("sip.subscription");
+        this.userAgent = userAgent;
+        this.delegate = options.delegate;
+    }
+    /**
+     * Subscription state. See {@link SubscriptionState} for details.
+     */
+    get state() {
+        return this._state;
+    }
+    /**
+     * Emits when the subscription `state` property changes.
+     */
+    get stateChange() {
+        return makeEmitter(this._stateEventEmitter);
+    }
+    /**
+     * True if disposed.
+     * @internal
+     */
+    get disposed() {
+        return this._disposed;
+    }
+    /**
+     * Destructor.
+     * @internal
+     */
+    _dispose() {
+        if (this._disposed) {
+            return;
+        }
+        this._disposed = true;
+        this.stateTransition(SubscriptionState.Terminated);
+        this._stateEventEmitter.removeAllListeners();
+    }
+    /** @internal */
+    stateTransition(newState) {
+        const invalidTransition = () => {
+            throw new Error(`Invalid state transition from ${this._state} to ${newState}`);
+        };
+        // Validate transition
+        switch (this._state) {
+            case SubscriptionState.Initial:
+                if (newState !== SubscriptionState.NotifyWait && newState !== SubscriptionState.Terminated) {
+                    invalidTransition();
+                }
+                break;
+            case SubscriptionState.NotifyWait:
+                if (newState !== SubscriptionState.Subscribed && newState !== SubscriptionState.Terminated) {
+                    invalidTransition();
+                }
+                break;
+            case SubscriptionState.Subscribed:
+                if (newState !== SubscriptionState.Terminated) {
+                    invalidTransition();
+                }
+                break;
+            case SubscriptionState.Terminated:
+                invalidTransition();
+                break;
+            default:
+                throw new Error("Unrecognized state.");
+        }
+        // Guard against duplicate transition
+        if (this._state === newState) {
+            return;
+        }
+        // Transition
+        this._state = newState;
+        this._logger.log(`Subscription ${this.dialog ? this.dialog.id : undefined} transitioned to ${this._state}`);
+        this._stateEventEmitter.emit("event", this._state);
+    }
+}

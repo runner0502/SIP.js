@@ -1,0 +1,1 @@
+// tslint:disable:callable-types

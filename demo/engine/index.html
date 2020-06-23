@@ -1,0 +1,140 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Engine Hello Demo | Ice for JavaScript</title>
+    <link rel="icon" type="image/x-icon" href="../../../assets/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="../../../assets/common.css" />
+    {{#cssDeps}}
+    <link rel="stylesheet" type="text/css" href="{{.}}"/>
+    {{/cssDeps}}
+
+            <!-- Common dependencies -->
+            {{#jsDeps}}
+            <script src="{{.}}"></script>
+            {{/jsDeps}}
+            <script type="text/javascript" src="../../../assets/common.js"></script>
+            <!--
+              Scripts used during development, for optimized builds comment
+              the following scripts and uncomment es5/browser/Client.min.js
+              below
+            -->
+            <!-- Ice.js (Ice run-time library) -->
+            <script type="text/javascript" src="../../../node_modules/ice/lib/Ice.js"></script>
+            <!-- <script type="text/javascript" src="./crypto-js/md5.js"></script>
+            <script type="text/javascript" src="./crypto-js/crypto-js.js"></script>
+            <script type="text/javascript" src="./crypto-js/core.js"></script> -->
+            <!-- main.js (Hello Demo Application Bundle) -->
+            <script type="text/javascript" src="main.js"></script>
+            <script type="text/javascript">
+                if(["http:", "https:"].indexOf(document.location.protocol) !== -1)
+                {
+                    checkGenerated(["main.js"]);
+                }
+            </script>
+  </head>
+  <body>
+
+      <div>
+        <label>serverip:</label>
+        <textarea id="txtServerIP">192.168.10.83</textarea>
+        <label>port:</label>
+        <textarea id="txtServerPort">10004</textarea>
+        <label style="width: 49%;float: left;">username:</label>
+        <textarea id="txtUsername">20000</textarea>
+        <label >password:</label>
+        <input id="txtPassword" type="text"></input>
+        <button id="btnRegist"  onclick="Client.init()">注册</button>
+      </div>
+      <div>
+          <h1>管理</h1>
+          <button id="btnGetGroupTree">获取机构树</button>
+      </div>
+      <div>
+          <h1>单呼</h1>
+          <label>对方号码：</label>
+          <textarea id="txtTargetNumber">20001</textarea>
+          <button id="btnCall"  onclick="Client.makecall(videoLocalAlice, videoRemoteAlice,remoteAudio)">呼叫</button>
+          <button id="btnHangup" >挂断</button>
+          <div >
+            <video id="videoRemoteAlice">
+              <p>Your browser doesn't support HTML5 video.</p>
+            </video>
+            <div class="video-local">
+              <video id="videoLocalAlice" muted="muted">
+                <p>Your browser doesn't support HTML5 video.</p>
+              </video>
+            </div>
+            <div>
+              <audio id="remoteAudio" controls>
+                <p>Your browser doesn't support HTML5 audio.</p>
+              </audio>
+            </div>
+          </div>
+      </div>
+      <div>
+        <h1>对讲</h1>
+        <label>对讲组号码：</label>
+        <textarea id="txtIntercomGroup">1005</textarea>
+        <button id="btnApplySpeak">申请话权</button>
+        <button id="btnReleaseSpeak">释放话权</button>
+      </div>
+      <div>
+          <h1>会议</h1>
+          <label>会议标识：</label>
+          <textarea></textarea>
+          <button>接听</button>
+          <button>挂断</button>
+          <label>会议成员：</label>
+          <textarea>7000</textarea>
+          <button id="btnCreateConference">开启会议</button>
+          <label>会议ID:</label>
+          <textarea id="txtConfereceCid"></textarea>
+          <button id="btnEndConferece">结束会议</button>
+          <label>号码：</label>
+          <textarea></textarea>
+          <button id="btnConfereceAddMember">邀请</button>
+          <button id="btnConfereceDeleteMember">踢出</button>
+      </div>
+    <!-- Main section that contains the user interface -->
+    <section role="main" id="body">
+        <div class="row">
+            <div class="large-12 medium-12 columns">
+                <form>
+                    <div class="row">
+                       
+                    </div>
+                    <div class="row">
+                        <div class="small-12 columns">
+                            <a href="#" class="button small" id="hello">Hello World!</a>
+                            <a href="#" class="button small" id="shutdown">Shutdown</a>
+                            <a href="#" class="button disabled small" id="flush">Flush</a>
+                        </div>
+                    </div>
+                    <textarea id="output" class="disabled" readonly></textarea>
+                    <div id="progress" class="row hide">
+                        <div class="small-12 columns left">
+                            <div class="inline left icon"></div>
+                            <div class="text">Sending Request...</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal dialog to show the client source code -->
+    <div id="source-modal" class="reveal-modal" data-reveal>
+        <a class="close-reveal-modal">&#215;</a>
+        <dl class="tabs" data-tab>
+            <dt></dt>
+            <dd class="active"><a href="#panel2-1">Slice</a></dd>
+            <dd><a href="#panel2-2">TypeScript</a></dd>
+            <dd><a href="#panel2-3">HTML</a></dd>
+        </dl>
+    </div>
+
+
+  </body>
+</html>
